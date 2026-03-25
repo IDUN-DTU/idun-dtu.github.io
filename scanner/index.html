@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TissueSW Scanner</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --text: #f8fafc;
+            --primary: #3b82f6;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .sample-id {
+            background-color: var(--surface);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 1.25rem;
+            color: var(--primary);
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .info {
+            color: #94a3b8;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+            max-width: 300px;
+        }
+
+        .btn-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            border-radius: 12px;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-checkout {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-dispose {
+            background-color: transparent;
+            color: var(--danger);
+            border: 2px solid var(--danger);
+        }
+
+        #error-msg {
+            color: var(--danger);
+            font-weight: bold;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Tissue Sample Management</h1>
+    
+    <div id="content" style="display: none; width: 100%; align-items: center; flex-direction: column;">
+        <div class="sample-id" id="sample-id-display"></div>
+        
+        <p class="info">Please select an action below. This will open your mail app to send an automated status update.</p>
+
+        <div class="btn-container">
+            <a href="#" id="btn-checkout" class="btn btn-checkout">Check Out Sample</a>
+            <a href="#" id="btn-dispose" class="btn btn-dispose">Dispose Sample</a>
+        </div>
+    </div>
+
+    <div id="error-msg">
+        Error: No sample ID provided in the URL.
+    </div>
+
+    <script>
+        // Use a dedicated receiver email for the lab system
+        const RECEIVER_EMAIL = "inventory_bot@lab.lims"; 
+        
+        document.addEventListener("DOMContentLoaded", () => {
+            const params = new URLSearchParams(window.location.search);
+            const sampleId = params.get('id');
+
+            if (!sampleId) {
+                document.getElementById('error-msg').style.display = 'block';
+                return;
+            }
+
+            document.getElementById('content').style.display = 'flex';
+            document.getElementById('sample-id-display').innerText = sampleId;
+
+            // Setup Mailto Links
+            const checkoutBtn = document.getElementById('btn-checkout');
+            const disposeBtn = document.getElementById('btn-dispose');
+
+            checkoutBtn.href = `mailto:${RECEIVER_EMAIL}?subject=CHECKOUT:${encodeURIComponent(sampleId)}&body=Automated checkout request for ${encodeURIComponent(sampleId)}. Do not edit the subject line.`;
+            disposeBtn.href = `mailto:${RECEIVER_EMAIL}?subject=DISPOSAL:${encodeURIComponent(sampleId)}&body=Automated disposal request for ${encodeURIComponent(sampleId)}. Do not edit the subject line.`;
+        });
+    </script>
+</body>
+</html>

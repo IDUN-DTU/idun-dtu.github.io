@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,7 +14,7 @@
             --danger: #ef4444;
             --success: #10b981;
         }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg);
@@ -24,6 +25,13 @@
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
+        }
+
+        .logo {
+            width: 150px;
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            display: block;
         }
 
         h1 {
@@ -40,7 +48,36 @@
             font-size: 1.25rem;
             color: var(--primary);
             margin-bottom: 2rem;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .input-group {
+            width: 100%;
+            max-width: 320px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .input-group label {
+            font-size: 0.95rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .input-field {
+            padding: 0.85rem 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background-color: var(--bg);
+            color: var(--text);
+            font-size: 1.1rem;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary);
         }
 
         .info {
@@ -92,21 +129,31 @@
             color: var(--danger);
             font-weight: bold;
             display: none;
+            text-align: center;
+            margin-top: 2rem;
         }
     </style>
 </head>
+
 <body>
 
-    <h1>Tissue Sample Management</h1>
-    
     <div id="content" style="display: none; width: 100%; align-items: center; flex-direction: column;">
+        <img src="assets/idun_logo.jpg" alt="Idun Logo" class="logo" />
+        <h1>Tissue Sample Management</h1>
+
         <div class="sample-id" id="sample-id-display"></div>
-        
-        <p class="info">Please select an action below. This will open your mail app to send an automated status update.</p>
+
+        <div class="input-group">
+            <label for="user-initials">Your Initials</label>
+            <input type="text" id="user-initials" class="input-field" placeholder="e.g. JD" required />
+        </div>
+
+        <p class="info">Please select an action below. This will open your mail app to send an automated status update.
+        </p>
 
         <div class="btn-container">
-            <a href="#" id="btn-checkout" class="btn btn-checkout">Check Out Sample</a>
-            <a href="#" id="btn-dispose" class="btn btn-dispose">Dispose Sample</a>
+            <button id="btn-checkout" class="btn btn-checkout">Check Out Sample</button>
+            <button id="btn-dispose" class="btn btn-dispose">Dispose Sample</button>
         </div>
     </div>
 
@@ -116,8 +163,8 @@
 
     <script>
         // Use a dedicated receiver email for the lab system
-        const RECEIVER_EMAIL = "inventory_bot@lab.lims"; 
-        
+        const RECEIVER_EMAIL = "iduntissuemanager@pm.me";
+
         document.addEventListener("DOMContentLoaded", () => {
             const params = new URLSearchParams(window.location.search);
             const sampleId = params.get('id');
@@ -130,13 +177,41 @@
             document.getElementById('content').style.display = 'flex';
             document.getElementById('sample-id-display').innerText = sampleId;
 
-            // Setup Mailto Links
             const checkoutBtn = document.getElementById('btn-checkout');
             const disposeBtn = document.getElementById('btn-dispose');
+            const initialsInput = document.getElementById('user-initials');
 
-            checkoutBtn.href = `mailto:${RECEIVER_EMAIL}?subject=CHECKOUT:${encodeURIComponent(sampleId)}&body=Automated checkout request for ${encodeURIComponent(sampleId)}. Do not edit the subject line.`;
-            disposeBtn.href = `mailto:${RECEIVER_EMAIL}?subject=DISPOSAL:${encodeURIComponent(sampleId)}&body=Automated disposal request for ${encodeURIComponent(sampleId)}. Do not edit the subject line.`;
+            function getInitials() {
+                const val = initialsInput.value.trim();
+                if (!val) {
+                    alert("Please enter your initials before proceeding.");
+                    initialsInput.focus();
+                    return null;
+                }
+                return val;
+            }
+
+            checkoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const initials = getInitials();
+                if (!initials) return;
+
+                const subject = `CHECKOUT:${encodeURIComponent(sampleId)}`;
+                const body = `Automated checkout request for ${encodeURIComponent(sampleId)} by ${encodeURIComponent(initials)}.\n\nDo not edit the subject line.`;
+                window.location.href = `mailto:${RECEIVER_EMAIL}?subject=${subject}&body=${encodeURIComponent(body)}`;
+            });
+
+            disposeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const initials = getInitials();
+                if (!initials) return;
+
+                const subject = `DISPOSAL:${encodeURIComponent(sampleId)}`;
+                const body = `Automated disposal request for ${encodeURIComponent(sampleId)} by ${encodeURIComponent(initials)}.\n\nDo not edit the subject line.`;
+                window.location.href = `mailto:${RECEIVER_EMAIL}?subject=${subject}&body=${encodeURIComponent(body)}`;
+            });
         });
     </script>
 </body>
+
 </html>
